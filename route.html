@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Route + Traffic</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+    }
+
+    .phone {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER FIXED */
+    .header {
+      position: relative;
+      z-index: 1000;
+      background: white;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .header span {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .route-box {
+      padding: 10px;
+      background: white;
+    }
+
+    .route-box input {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+    }
+
+    .route-box button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+
+    #infoBox {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    /* MAP FIX */
+    #map {
+      flex: 1;
+      width: 100%;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="phone">
+
+  <!-- HEADER -->
+  <div class="header">
+    <span onclick="goBack()">←</span>
+    <h3>LIVE ROUTE</h3>
+  </div>
+
+  <!-- INPUT -->
+  <div class="route-box">
+
+    <input id="start" placeholder="Start location">
+    <input id="end" placeholder="Destination">
+
+    <button onclick="getRoute()">Find Route</button>
+
+    <div id="infoBox"></div>
+
+  </div>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+</div>
+
+<script>
+
+/* BACK BUTTON */
+function goBack() {
+  window.location.href = "livetraffic.html";
+}
+
+/* MAP */
+let map = L.map('map').setView([-4.0435, 39.6682], 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let routeLine;
+
+/* GET COORDINATES */
+async function getCoordinates(place) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${place}`;
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data.length) {
+    alert("Location not found: " + place);
+    return null;
+  }
+
+  return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+}
+
+/* DISTANCE */
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+
+  const a =
+    Math.sin(dLat/2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) *
+    Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) ** 2;
+
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+/* 🚨 TRAFFIC CHECK */
+function checkTraffic(latlngs, reports) {
+
+  let found = false;
+
+  reports.forEach(r => {
+    latlngs.forEach(p => {
+
+      const dist = getDistance(r.lat, r.lng, p[0], p[1]);
+
+      if (dist < 0.5 && !found) {
+
+        alert("⚠️ Warning: Traffic or accident detected on your route!");
+
+        L.circle([r.lat, r.lng], {
+          color: 'red',
+          radius: 300
+        }).addTo(map).bindPopup("⚠ Problem here");
+
+        found = true;
+      }
+
+    });
+  });
+}
+
+/* ROUTE FUNCTION */
+async function getRoute() {
+
+  const infoBox = document.getElementById("infoBox");
+  infoBox.innerHTML = "⏳ Loading route...";
+
+  const startText = document.getElementById("start").value;
+  const endText = document.getElementById("end").value;
+
+  if (!startText || !endText) {
+    alert("Enter both locations");
+    return;
+  }
+
+  const start = await getCoordinates(startText);
+  const end = await getCoordinates(endText);
+
+  if (!start || !end) return;
+
+  const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  const route = data.routes[0].geometry.coordinates;
+  const latlngs = route.map(p => [p[1], p[0]]);
+
+  if (routeLine) map.removeLayer(routeLine);
+
+  routeLine = L.polyline(latlngs, {
+    color: "blue",
+    weight: 5
+  }).addTo(map);
+
+  map.fitBounds(routeLine.getBounds());
+
+  L.marker(start).addTo(map).bindPopup("Start");
+  L.marker(end).addTo(map).bindPopup("Destination");
+
+  const distance = data.routes[0].distance / 1000;
+  const duration = data.routes[0].duration / 60;
+
+  infoBox.innerHTML =
+    `📍 Distance: ${distance.toFixed(1)} km <br> ⏱ Time: ${duration.toFixed(0)} min`;
+
+  const reports = JSON.parse(localStorage.getItem("reports")) || [];
+  checkTraffic(latlngs, reports);
+}
+
+</script>
+
+</body>
+</html>

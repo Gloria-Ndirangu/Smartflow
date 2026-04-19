@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Traffic Map</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f5f7fb;
+    }
+
+    .phone {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .header {
+      background: white;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .header span {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    /* MAP */
+    #map {
+      flex: 1;
+      width: 100%;
+    }
+
+    /* SEARCH */
+    .search-box {
+      padding: 10px;
+      background: white;
+    }
+
+    .search-box input {
+      width: 95%;
+      padding: 8px;
+    }
+
+    /* ACTIONS */
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      background: white;
+    }
+
+    .actions button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+    }
+
+    /* =========================
+       BOTTOM NAVBAR
+    ========================= */
+    .navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 2000;
+    }
+
+    .nav-item {
+      text-align: center;
+      font-size: 12px;
+      color: gray;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    .nav-item span {
+      display: block;
+      font-size: 18px;
+    }
+
+    /* prevent navbar overlap */
+    .spacer {
+      height: 60px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="phone">
+
+  <!-- HEADER -->
+  <div class="header">
+    <span onclick="goBack()">←</span>
+    <h3>LIVE TRAFFIC MAP</h3>
+    <span>☰</span>
+  </div>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+    <input type="text" placeholder="Where are you going?">
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+
+    <a href="reporttraffic.html">
+      <button>🚗 Report Traffic</button>
+    </a>
+
+    <a href="reportaccident.html">
+      <button>🚑 Report Accident</button>
+    </a>
+
+    <a href="route.html">
+      <button>📍 Find Route</button>
+    </a>
+
+  </div>
+
+  <!-- SPACE FOR NAVBAR -->
+  <div class="spacer"></div>
+
+</div>
+
+<!-- =========================
+     BOTTOM NAVBAR
+========================= -->
+<div class="navbar">
+
+  <a class="nav-item" href="index.html">
+    <span>🏠</span>
+    Home
+  </a>
+
+  <a class="nav-item active" href="livetraffic.html">
+    <span>🗺️</span>
+    Map
+  </a>
+
+  <a class="nav-item" href="reporttraffic.html">
+    <span>🚨</span>
+    Report
+  </a>
+
+  <a class="nav-item" href="route.html">
+    <span>🛣️</span>
+    Route
+  </a>
+
+</div>
+
+<script>
+
+/* BACK BUTTON */
+function goBack() {
+  window.location.href = "index.html";
+}
+
+/* MAP */
+let map = L.map('map').setView([-1.286389, 36.817223], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+/* USER LOCATION */
+navigator.geolocation.getCurrentPosition(position => {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+
+  map.setView([lat, lng], 14);
+
+  L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup("📍 You are here");
+});
+
+/* REPORTS */
+const reports = JSON.parse(localStorage.getItem("reports")) || [];
+
+reports.forEach(r => {
+  if (r.lat && r.lng) {
+    L.marker([r.lat, r.lng])
+      .addTo(map)
+      .bindPopup(`<b>${r.type}</b>`);
+  }
+});
+
+</script>
+
+</body>
+</html>

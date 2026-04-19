@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Accident</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+    }
+
+    .phone {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .content {
+      flex: 1;
+      padding: 15px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 12px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="phone">
+
+  <!-- HEADER -->
+  <div class="header">
+    <span onclick="goBack()">←</span>
+    <h3>REPORT ACCIDENT</h3>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <p>What happened?</p>
+
+    <label><input type="radio" name="accident"> Minor Accident</label>
+    <label><input type="radio" name="accident"> Major Accident</label>
+    <label><input type="radio" name="accident"> Vehicle Breakdown</label>
+
+    <button class="main-btn" onclick="submitAccident()">Submit</button>
+
+  </div>
+
+</div>
+
+<script>
+
+/* BACK BUTTON */
+function goBack() {
+  window.location.href = "livetraffic.html";
+}
+
+/* SUBMIT */
+function submitAccident() {
+  const selected = document.querySelector('input[name="accident"]:checked');
+
+  if (!selected) {
+    alert("Please select an option");
+    return;
+  }
+
+  const accidentType = selected.parentElement.innerText.trim();
+
+  // SAVE DATA
+  let reports = JSON.parse(localStorage.getItem("accidents")) || [];
+
+  reports.push({
+    type: accidentType,
+    time: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("accidents", JSON.stringify(reports));
+
+  alert("✅ Report submitted: " + accidentType);
+
+  // DELAY THEN REDIRECT
+  setTimeout(() => {
+    window.location.href = "livetraffic.html";
+  }, 800);
+}
+
+</script>
+
+</body>
+</html>

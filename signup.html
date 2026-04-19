@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SmartFlow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="card auth-card">
+
+    <!-- Header -->
+    <div class="header">
+     <a href="index.html" class="back">←</a>
+     
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('signup')">Sign Up</button>
+      <button class="tab" onclick="showTab('login')">Log In</button>
+    </div>
+
+    <!-- SIGN UP -->
+    <div id="signup" class="form active">
+      <h3>SIGN UP</h3>
+
+      <input type="text" placeholder="Full Name">
+      <input type="email" placeholder="Email Address">
+      <input type="text" placeholder="Phone Number">
+
+      <div class="gender">
+        <label><input type="radio" name="gender"> Female</label>
+        <label><input type="radio" name="gender"> Male</label>
+      </div>
+
+      <input type="password" placeholder="Password">
+      <input type="password" placeholder="Confirm Password">
+
+      <button type="button" onclick="validateSignup()">Create Account</button>
+
+      <label class="checkbox">
+        <input type="checkbox"> Verify phone with OTP
+      </label>
+    </div>
+
+    <!-- LOGIN -->
+   <div id="login" class="form">
+  <h3>LOG IN</h3>
+
+  <input type="email" placeholder="Email Address">
+  <input type="password" placeholder="Password">
+
+  <!-- ✅ ADD THIS LINE -->
+  <label class="checkbox">
+    <input type="checkbox" id="rememberMe"> Remember Me
+  </label>
+
+  <button type="button" class="main-btn" onclick="loginUser()">Log In</button>
+</div>
+
+  </div>
+</div>
+
+<script>
+
+// AUTO LOGIN (checks both remember + session login)
+if (
+  localStorage.getItem("loggedIn") === "true" ||
+  sessionStorage.getItem("loggedIn") === "true"
+) {
+  window.location.href = "livetrafic.html";
+}
+
+function showTab(tabName) {
+  document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+  document.getElementById(tabName).classList.add('active');
+
+  if (tabName === 'signup') {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+  } else {
+    document.querySelectorAll('.tab')[1].classList.add('active');
+  }
+}
+
+// URL tab control
+const params = new URLSearchParams(window.location.search);
+const tab = params.get("tab");
+
+if (tab === "signup") {
+  showTab("signup");
+} else if (tab === "login") {
+  showTab("login");
+} else {
+  showTab("signup");
+}
+
+/* =========================
+   SIGN UP
+========================= */
+function validateSignup() {
+  const inputs = document.querySelectorAll("#signup input");
+
+  for (let input of inputs) {
+    if (
+      input.type !== "radio" &&
+      input.type !== "checkbox" &&
+      input.value.trim() === ""
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
+  }
+
+  const password = document.querySelector("#signup input[type='password']");
+  if (password && password.value.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
+
+  const email = document.querySelector("#signup input[type='email']");
+  localStorage.setItem("userEmail", email.value);
+  localStorage.setItem("userPassword", password.value);
+
+  localStorage.setItem("loggedIn", "true");
+
+  alert("Account created successfully!");
+  window.location.href = "livetrafic.html";
+}
+
+/* =========================
+   LOGIN
+========================= */
+function loginUser() {
+  const inputs = document.querySelectorAll("#login input");
+
+  for (let input of inputs) {
+    if (input.type !== "checkbox" && input.value.trim() === "") {
+      alert("Please fill login details");
+      return;
+    }
+  }
+
+  const remember = document.getElementById("rememberMe").checked;
+
+  if (remember) {
+    localStorage.setItem("loggedIn", "true");
+  } else {
+    sessionStorage.setItem("loggedIn", "true");
+  }
+
+  alert("Login successful!");
+  window.location.href = "livetrafic.html";
+}
+
+</script>
+</body>
+</html>
