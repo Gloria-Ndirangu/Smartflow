@@ -11,6 +11,13 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+  <!-- ✅ LOGIN PROTECTION (IMPORTANT FIX) -->
+  <script>
+    if (localStorage.getItem("loggedIn") !== "true") {
+      window.location.href = "signup.html";
+    }
+  </script>
+
   <style>
     body {
       margin: 0;
@@ -24,7 +31,6 @@
       flex-direction: column;
     }
 
-    /* HEADER */
     .header {
       background: white;
       padding: 12px;
@@ -42,13 +48,11 @@
       font-size: 20px;
     }
 
-    /* MAP */
     #map {
       flex: 1;
       width: 100%;
     }
 
-    /* SEARCH */
     .search-box {
       padding: 10px;
       background: white;
@@ -59,7 +63,6 @@
       padding: 8px;
     }
 
-    /* ACTIONS */
     .actions {
       display: flex;
       flex-direction: column;
@@ -77,9 +80,6 @@
       border-radius: 8px;
     }
 
-    /* =========================
-       BOTTOM NAVBAR
-    ========================= */
     .navbar {
       position: fixed;
       bottom: 0;
@@ -111,7 +111,6 @@
       font-size: 18px;
     }
 
-    /* prevent navbar overlap */
     .spacer {
       height: 60px;
     }
@@ -154,14 +153,11 @@
 
   </div>
 
-  <!-- SPACE FOR NAVBAR -->
   <div class="spacer"></div>
 
 </div>
 
-<!-- =========================
-     BOTTOM NAVBAR
-========================= -->
+<!-- NAVBAR -->
 <div class="navbar">
 
   <a class="nav-item" href="index.html">
@@ -188,7 +184,6 @@
 
 <script>
 
-/* BACK BUTTON */
 function goBack() {
   window.location.href = "index.html";
 }
