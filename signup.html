@@ -2,160 +2,156 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SmartFlow</title>
+  <title>Live Traffic Map</title>
+
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f5f7fb;
+    }
+
+    .phone {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: white;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+      position: relative;
+    }
+
+    .header span {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    #map {
+      flex: 1;
+      width: 100%;
+    }
+
+    .search-box {
+      padding: 10px;
+      background: white;
+    }
+
+    .search-box input {
+      width: 95%;
+      padding: 8px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      background: white;
+    }
+
+    .actions button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-  <div class="card auth-card">
+<div class="phone">
 
-    <!-- Header -->
-    <div class="header">
-     <a href="index.html" class="back">←</a>
-     
-    </div>
+  <!-- HEADER -->
+  <div class="header">
+    <!-- ✅ BACK BUTTON FIXED -->
+    <span onclick="goBack()">←</span>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('signup')">Sign Up</button>
-      <button class="tab" onclick="showTab('login')">Log In</button>
-    </div>
+    <h3>LIVE TRAFFIC MAP</h3>
+    <span>☰</span>
+  </div>
 
-    <!-- SIGN UP -->
-    <div id="signup" class="form active">
-      <h3>SIGN UP</h3>
+  <!-- MAP -->
+  <div id="map"></div>
 
-      <input type="text" placeholder="Full Name">
-      <input type="email" placeholder="Email Address">
-      <input type="text" placeholder="Phone Number">
+  <!-- SEARCH -->
+  <div class="search-box">
+    <input type="text" placeholder="Where are you going?">
+  </div>
 
-      <div class="gender">
-        <label><input type="radio" name="gender"> Female</label>
-        <label><input type="radio" name="gender"> Male</label>
-      </div>
+  <!-- ACTIONS -->
+  <div class="actions">
 
-      <input type="password" placeholder="Password">
-      <input type="password" placeholder="Confirm Password">
+    <a href="reporttraffic.html">
+      <button>🚗 Report Traffic</button>
+    </a>
 
-      <button type="button" onclick="validateSignup()">Create Account</button>
+    <a href="reportaccident.html">
+      <button>🚑 Report Accident</button>
+    </a>
 
-      <label class="checkbox">
-        <input type="checkbox"> Verify phone with OTP
-      </label>
-    </div>
-
-    <!-- LOGIN -->
-   <div id="login" class="form">
-  <h3>LOG IN</h3>
-
-  <input type="email" placeholder="Email Address">
-  <input type="password" placeholder="Password">
-
-  <!-- ✅ ADD THIS LINE -->
-  <label class="checkbox">
-    <input type="checkbox" id="rememberMe"> Remember Me
-  </label>
-
-  <button type="button" class="main-btn" onclick="loginUser()">Log In</button>
-</div>
+    <a href="route.html">
+      <button>📍 Find Route</button>
+    </a>
 
   </div>
+
 </div>
 
 <script>
 
-// AUTO LOGIN (checks both remember + session login)
-if (
-  localStorage.getItem("loggedIn") === "true" ||
-  sessionStorage.getItem("loggedIn") === "true"
-) {
-  window.location.href = "livetrafic.html";
-}
-
-function showTab(tabName) {
-  document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-
-  document.getElementById(tabName).classList.add('active');
-
-  if (tabName === 'signup') {
-    document.querySelectorAll('.tab')[0].classList.add('active');
-  } else {
-    document.querySelectorAll('.tab')[1].classList.add('active');
+  /* ✅ BACK FUNCTION (FIXED) */
+  function goBack() {
+    window.location.href = "index.html";
   }
-}
 
-// URL tab control
-const params = new URLSearchParams(window.location.search);
-const tab = params.get("tab");
+  /* MAP */
+  let map = L.map('map').setView([-1.286389, 36.817223], 13);
 
-if (tab === "signup") {
-  showTab("signup");
-} else if (tab === "login") {
-  showTab("login");
-} else {
-  showTab("signup");
-}
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
 
-/* =========================
-   SIGN UP
-========================= */
-function validateSignup() {
-  const inputs = document.querySelectorAll("#signup input");
+  /* USER LOCATION */
+  navigator.geolocation.getCurrentPosition(position => {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
 
-  for (let input of inputs) {
-    if (
-      input.type !== "radio" &&
-      input.type !== "checkbox" &&
-      input.value.trim() === ""
-    ) {
-      alert("Please fill all fields");
-      return;
+    map.setView([lat, lng], 14);
+
+    L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup("📍 You are here");
+  });
+
+  /* LOAD REPORTS */
+  const reports = JSON.parse(localStorage.getItem("reports")) || [];
+
+  reports.forEach(r => {
+    if (r.lat && r.lng) {
+      L.marker([r.lat, r.lng])
+        .addTo(map)
+        .bindPopup(`<b>${r.type}</b>`);
     }
-  }
-
-  const password = document.querySelector("#signup input[type='password']");
-  if (password && password.value.length < 6) {
-    alert("Password must be at least 6 characters");
-    return;
-  }
-
-  const email = document.querySelector("#signup input[type='email']");
-  localStorage.setItem("userEmail", email.value);
-  localStorage.setItem("userPassword", password.value);
-
-  localStorage.setItem("loggedIn", "true");
-
-  alert("Account created successfully!");
-  window.location.href = "livetrafic.html";
-}
-
-/* =========================
-   LOGIN
-========================= */
-function loginUser() {
-  const inputs = document.querySelectorAll("#login input");
-
-  for (let input of inputs) {
-    if (input.type !== "checkbox" && input.value.trim() === "") {
-      alert("Please fill login details");
-      return;
-    }
-  }
-
-  const remember = document.getElementById("rememberMe").checked;
-
-  if (remember) {
-    localStorage.setItem("loggedIn", "true");
-  } else {
-    sessionStorage.setItem("loggedIn", "true");
-  }
-
-  alert("Login successful!");
-  window.location.href = "livetrafic.html";
-}
+  });
 
 </script>
+
 </body>
 </html>
