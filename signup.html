@@ -1,24 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Signup</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smartflow Signup</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #4A86C5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 350px;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      color: #4A86C5;
+    }
+
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+
+    button {
+      width: 95%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #4A86C5;
+      color: white;
+      font-weight: bold;
+    }
+
+    .switch {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
+
 <body>
 
-  <h2>Create Account</h2>
+<div class="card">
 
-  <input type="text" placeholder="Name"><br><br>
-  <input type="email" placeholder="Email"><br><br>
-  <input type="password" placeholder="Password"><br><br>
+  <!-- SIGNUP -->
+  <div id="signupBox">
+    <h2>Sign Up</h2>
 
-  <button onclick="signup()">SIGN UP</button>
+    <input type="text" placeholder="Name"><br>
+    <input type="email" placeholder="Email"><br>
+    <input type="password" placeholder="Password"><br>
 
-  <script>
-    function signup() {
-      localStorage.setItem("loggedIn", "true");
-      window.location.href = "livetraffic.html";
-    }
-  </script>
+    <button onclick="signup()">Create Account</button>
+
+    <div class="switch" onclick="toggle()">Already have an account? Login</div>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="loginBox" class="hidden">
+    <h2>Login</h2>
+
+    <input type="email" placeholder="Email"><br>
+    <input type="password" placeholder="Password"><br>
+
+    <button onclick="login()">Login</button>
+
+    <div class="switch" onclick="toggle()">No account? Sign Up</div>
+  </div>
+
+</div>
+
+<script>
+function toggle() {
+  document.getElementById("signupBox").classList.toggle("hidden");
+  document.getElementById("loginBox").classList.toggle("hidden");
+}
+
+function signup() {
+  localStorage.setItem("loggedIn", "true");
+  window.location.href = "livetraffic.html";
+}
+
+function login() {
+  localStorage.setItem("loggedIn", "true");
+  window.location.href = "livetraffic.html";
+}
+</script>
 
 </body>
 </html>
